@@ -22,3 +22,4 @@ Thumbs.db
 .idea/
 
 data/bu_resources.json
+backend/eval/rag_outputs_cache.json
