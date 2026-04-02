@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: terrierlife-ai-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false          # paste in Render dashboard
+      - key: DATABASE_URL
+        sync: false          # paste your Neon connection string
+      - key: ALLOWED_ORIGINS
+        sync: false          # paste your Vercel URL after frontend is deployed
