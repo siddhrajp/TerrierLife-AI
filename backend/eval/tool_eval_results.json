@@ -1,0 +1,253 @@
+{
+  "total": 20,
+  "exact_match_rate": 0.95,
+  "any_overlap_rate": 1.0,
+  "param_accuracy": 1.0,
+  "cases": [
+    {
+      "message": "I have 25 minutes near CDS, where can I eat?",
+      "expected_tools": [
+        "get_nearby_places"
+      ],
+      "called_tools": [
+        "get_nearby_places"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": true
+    },
+    {
+      "message": "Find me a quiet study spot near CAS with outlets",
+      "expected_tools": [
+        "get_nearby_places"
+      ],
+      "called_tools": [
+        "get_nearby_places"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": true
+    },
+    {
+      "message": "Where can I print near GSU?",
+      "expected_tools": [
+        "get_nearby_places"
+      ],
+      "called_tools": [
+        "get_nearby_places"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": true
+    },
+    {
+      "message": "What's a good place to study near Questrom with outlets and coffee?",
+      "expected_tools": [
+        "get_nearby_places"
+      ],
+      "called_tools": [
+        "get_nearby_places"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": true
+    },
+    {
+      "message": "Is there a library near West Campus?",
+      "expected_tools": [
+        "get_nearby_places"
+      ],
+      "called_tools": [
+        "get_nearby_places"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": true
+    },
+    {
+      "message": "How do I apply for OPT as an F-1 student?",
+      "expected_tools": [
+        "search_bu_resource"
+      ],
+      "called_tools": [
+        "search_bu_resource"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "What is CPT and how is it different from OPT?",
+      "expected_tools": [
+        "search_bu_resource"
+      ],
+      "called_tools": [
+        "search_bu_resource"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "How do I drop a class at BU?",
+      "expected_tools": [
+        "search_bu_resource"
+      ],
+      "called_tools": [
+        "search_bu_resource"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "Where can I get free tutoring at BU?",
+      "expected_tools": [
+        "search_bu_resource"
+      ],
+      "called_tools": [
+        "search_bu_resource"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "How do I apply for financial aid at BU?",
+      "expected_tools": [
+        "search_bu_resource"
+      ],
+      "called_tools": [
+        "search_bu_resource"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "How does BU housing lottery work?",
+      "expected_tools": [
+        "search_bu_resource"
+      ],
+      "called_tools": [
+        "search_bu_resource"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "I'm an international student \u2014 where's the ISSO office?",
+      "expected_tools": [
+        "search_bu_resource"
+      ],
+      "called_tools": [
+        "search_bu_resource"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "Where can I get academic advising in CAS?",
+      "expected_tools": [
+        "search_bu_resource"
+      ],
+      "called_tools": [
+        "search_bu_resource"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "Any AI or startup events this week?",
+      "expected_tools": [
+        "get_events"
+      ],
+      "called_tools": [
+        "get_events"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "What hackathons are happening this month?",
+      "expected_tools": [
+        "get_events"
+      ],
+      "called_tools": [
+        "get_events"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "Are there any wellness events I could check out?",
+      "expected_tools": [
+        "get_events"
+      ],
+      "called_tools": [
+        "get_events"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "What career fairs are coming up?",
+      "expected_tools": [
+        "get_events"
+      ],
+      "called_tools": [
+        "get_events"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "Any AI events or hackathons I should check out near Agganis?",
+      "expected_tools": [
+        "get_events"
+      ],
+      "called_tools": [
+        "get_events",
+        "get_nearby_places"
+      ],
+      "exact_match": false,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "I have an hour before my AI event near CDS \u2014 where should I grab coffee, and what's the event about?",
+      "expected_tools": [
+        "get_events",
+        "get_nearby_places"
+      ],
+      "called_tools": [
+        "get_events",
+        "get_nearby_places"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "I need a quiet study spot near CAS, and separately I want to know how to book a group study room at the library",
+      "expected_tools": [
+        "get_nearby_places",
+        "search_bu_resource"
+      ],
+      "called_tools": [
+        "get_nearby_places",
+        "search_bu_resource"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    }
+  ]
+}

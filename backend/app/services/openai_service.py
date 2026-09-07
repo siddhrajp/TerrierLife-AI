@@ -89,9 +89,17 @@ async def handle_query(
     # Last message in the result is the final AI response
     final_message = result["messages"][-1]
 
+    tool_calls = [
+        {"tool": tc["name"], "args": tc["args"]}
+        for msg in result["messages"]
+        if getattr(msg, "tool_calls", None)
+        for tc in msg.tool_calls
+    ]
+
     return {
         "response": final_message.content,
         "type": detect_response_type(message),
+        "tool_calls": tool_calls,
     }
 
 

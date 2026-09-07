@@ -75,6 +75,24 @@ Evaluated over 20 BU-specific questions using [RAGAS](https://github.com/explodi
 
 ---
 
+## Agent Evaluation (Tool Selection)
+
+RAGAS only scores the RAG retrieval leg — it says nothing about whether the LangGraph ReAct agent picks the right tool(s) for a query, or extracts correct arguments from it. Built a separate harness for that: 20 labeled test cases (including multi-tool queries) run against the live agent, checking tool selection and parameter extraction.
+
+| Metric | Result |
+|---|---|
+| Exact tool-set match | 19/20 (95%) |
+| Any correct tool used | 20/20 (100%) |
+| Parameter accuracy | 5/5 (100%) |
+
+**Key findings:**
+- The harness caught a real bug: for queries like *"study spot near Questrom"*, the agent extracted `location: "Questrom School of Business"` instead of the short zone code `"Questrom"`, which silently returned zero results against the DB's zone map. Fixed by normalizing extracted locations against known campus zones (case-insensitive substring match) before querying.
+- The one remaining "miss" on exact tool-set match is arguably a mislabeled test case, not an agent error — the agent called both `get_events` and `get_nearby_places` for a query that mentioned a specific location, which is a reasonable interpretation.
+
+> Run it yourself: `cd backend && python eval/run_tool_eval.py`
+
+---
+
 ## Running Locally
 
 **1. Database**
