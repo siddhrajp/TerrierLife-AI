@@ -96,4 +96,46 @@ TOOL_TEST_CASES = [
         "message": "I need a quiet study spot near CAS, and separately I want to know how to book a group study room at the library",
         "expected_tools": ["get_nearby_places", "search_bu_resource"],
     },
+
+    # Multi-turn — only the final turn is scored. Each one is deliberately
+    # ambiguous on its own, so passing requires carrying context from the
+    # earlier turn rather than guessing from the words in the last message.
+    {
+        "turns": [
+            "Find me a quiet study spot near CAS",
+            "what about closer to Questrom instead?",
+        ],
+        "expected_tools": ["get_nearby_places"],
+        # "study" and "quiet" appear only in turn 1.
+        "expected_params": {"get_nearby_places": {"location": "Questrom", "place_type": "study"}},
+    },
+    {
+        "turns": [
+            "Where can I eat near CDS?",
+            "anywhere quieter?",
+        ],
+        "expected_tools": ["get_nearby_places"],
+        "expected_params": {"get_nearby_places": {"place_type": "dining"}},
+    },
+    {
+        "turns": [
+            "How do I apply for OPT as an F-1 student?",
+            "and what about CPT?",
+        ],
+        "expected_tools": ["search_bu_resource"],
+    },
+    {
+        "turns": [
+            "What is the Educational Resource Center?",
+            "where is it located?",
+        ],
+        "expected_tools": ["search_bu_resource"],
+    },
+    {
+        "turns": [
+            "Any AI events this week?",
+            "what about startup ones?",
+        ],
+        "expected_tools": ["get_events"],
+    },
 ]

@@ -24,3 +24,6 @@ Thumbs.db
 data/bu_resources.json
 backend/eval/rag_outputs_cache.json
 frontend/tsconfig.tsbuildinfo
+
+# Personal notes — interview prep, not part of the repo
+docs/

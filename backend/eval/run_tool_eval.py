@@ -15,6 +15,7 @@ import json
 import os
 import random
 import sys
+import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -25,9 +26,19 @@ load_dotenv()
 from openai import RateLimitError
 
 from app.db.connection import SessionLocal
+from app.services.memory_service import clear_history
 from app.services.openai_service import handle_query
 from app.services.places_service import _normalize_zone
 from eval.tool_selection_questions import TOOL_TEST_CASES
+
+
+def _case_label(case: dict) -> str:
+    """Printable identity for a case — multi-turn cases have no single
+    `message`, so show the scored (final) turn with its lead-in."""
+    turns = case.get("turns")
+    if turns:
+        return f"{turns[0]} -> {turns[-1]}"
+    return case["message"]
 
 
 def _param_matches(tool_name: str, key: str, actual, expected) -> bool:
@@ -38,7 +49,7 @@ def _param_matches(tool_name: str, key: str, actual, expected) -> bool:
     return str(actual).lower() == str(expected).lower()
 
 
-async def _handle_with_retry(db, case: dict, attempts: int = 4):
+async def _handle_with_retry(db, case: dict, message: str, session_id: str | None, attempts: int = 4):
     """Retry on transient API errors (notably 429 TPM limits — the agent pulls
     a lot of context per call, so a full run can outpace the token/min quota).
     Without this, a rate-limited call is indistinguishable from the agent
@@ -46,11 +57,12 @@ async def _handle_with_retry(db, case: dict, attempts: int = 4):
     for attempt in range(attempts):
         try:
             return await handle_query(
-                message=case["message"],
+                message=message,
                 location=case.get("location"),
                 time_available=case.get("time_available"),
                 interests=case.get("interests"),
                 db=db,
+                session_id=session_id,
             )
         except RateLimitError:
             if attempt == attempts - 1:
@@ -61,7 +73,23 @@ async def _handle_with_retry(db, case: dict, attempts: int = 4):
 
 
 async def run_case(db, case: dict) -> dict:
-    result = await _handle_with_retry(db, case)
+    """Single-turn cases carry `message`; multi-turn cases carry `turns`.
+
+    For a multi-turn case only the final turn is scored — the earlier turns
+    exist to establish context that the last, deliberately ambiguous, question
+    depends on. Each case gets a fresh session so cases can't leak into
+    each other.
+    """
+    turns = case.get("turns") or [case["message"]]
+    session_id = f"eval-{uuid.uuid4().hex[:12]}" if len(turns) > 1 else None
+
+    for message in turns[:-1]:
+        await _handle_with_retry(db, case, message, session_id)
+
+    result = await _handle_with_retry(db, case, turns[-1], session_id)
+
+    if session_id:
+        clear_history(db, session_id)
 
     called_tools = {tc["tool"] for tc in result.get("tool_calls", [])}
     expected_tools = set(case["expected_tools"])
@@ -79,7 +107,7 @@ async def run_case(db, case: dict) -> dict:
         ))
 
     return {
-        "message": case["message"],
+        "message": _case_label(case),
         "expected_tools": sorted(expected_tools),
         "called_tools": sorted(called_tools),
         "exact_match": called_tools == expected_tools,
@@ -95,13 +123,13 @@ async def main():
     print(f"Running {len(TOOL_TEST_CASES)} tool-selection test cases...\n")
 
     for i, case in enumerate(TOOL_TEST_CASES):
-        print(f"[{i+1}/{len(TOOL_TEST_CASES)}] {case['message']}")
+        print(f"[{i+1}/{len(TOOL_TEST_CASES)}] {_case_label(case)}")
         try:
             r = await run_case(db, case)
         except Exception as e:
             print(f"  Error: {e}")
             r = {
-                "message": case["message"],
+                "message": _case_label(case),
                 "expected_tools": sorted(case["expected_tools"]),
                 "called_tools": [],
                 "exact_match": False,

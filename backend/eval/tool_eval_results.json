@@ -1,9 +1,9 @@
 {
-  "total_cases": 20,
-  "scored": 20,
+  "total_cases": 25,
+  "scored": 25,
   "errored": 0,
-  "exact_match_rate": 0.95,
-  "any_overlap_rate": 1.0,
+  "exact_match_rate": 0.92,
+  "any_overlap_rate": 0.96,
   "param_accuracy": 1.0,
   "cases": [
     {
@@ -246,6 +246,64 @@
       "called_tools": [
         "get_nearby_places",
         "search_bu_resource"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "Find me a quiet study spot near CAS -> what about closer to Questrom instead?",
+      "expected_tools": [
+        "get_nearby_places"
+      ],
+      "called_tools": [
+        "get_nearby_places"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": true
+    },
+    {
+      "message": "Where can I eat near CDS? -> anywhere quieter?",
+      "expected_tools": [
+        "get_nearby_places"
+      ],
+      "called_tools": [
+        "get_nearby_places"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": true
+    },
+    {
+      "message": "How do I apply for OPT as an F-1 student? -> and what about CPT?",
+      "expected_tools": [
+        "search_bu_resource"
+      ],
+      "called_tools": [
+        "search_bu_resource"
+      ],
+      "exact_match": true,
+      "any_overlap": true,
+      "param_match": null
+    },
+    {
+      "message": "What is the Educational Resource Center? -> where is it located?",
+      "expected_tools": [
+        "search_bu_resource"
+      ],
+      "called_tools": [],
+      "exact_match": false,
+      "any_overlap": false,
+      "param_match": null
+    },
+    {
+      "message": "Any AI events this week? -> what about startup ones?",
+      "expected_tools": [
+        "get_events"
+      ],
+      "called_tools": [
+        "get_events"
       ],
       "exact_match": true,
       "any_overlap": true,
