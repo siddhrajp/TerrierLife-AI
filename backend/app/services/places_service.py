@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+
 from app.models.db_models import Place
 
 ZONE_MAP = {

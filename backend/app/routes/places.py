@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query
-from app.services.places_service import search_places
+
 from app.db.connection import get_db
+from app.services.places_service import search_places
 
 router = APIRouter()
 

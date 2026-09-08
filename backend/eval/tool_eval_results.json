@@ -1,5 +1,7 @@
 {
-  "total": 20,
+  "total_cases": 20,
+  "scored": 20,
+  "errored": 0,
   "exact_match_rate": 0.95,
   "any_overlap_rate": 1.0,
   "param_accuracy": 1.0,

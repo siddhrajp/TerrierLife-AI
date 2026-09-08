@@ -12,9 +12,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from app.db.connection import SessionLocal
-from app.models.db_models import Base, Place, Event
-from app.db.connection import engine
+from app.db.connection import SessionLocal, engine
+from app.models.db_models import Base, Event, Place
 
 Base.metadata.create_all(bind=engine)
 

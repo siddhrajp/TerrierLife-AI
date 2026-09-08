@@ -1,6 +1,8 @@
-from sqlalchemy.orm import Session
-from app.models.db_models import Event
 from datetime import date, timedelta
+
+from sqlalchemy.orm import Session
+
+from app.models.db_models import Event
 
 
 async def search_events(db: Session, interests: list, days_ahead: int = 7) -> dict:

@@ -1,0 +1,28 @@
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+exclude = ["venv", "__pycache__"]
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle
+    "F",    # pyflakes
+    "I",    # import sorting
+    "B",    # bugbear
+    "SIM",  # simplification
+    "UP",   # pyupgrade
+]
+ignore = [
+    # FastAPI's dependency-injection idiom is a call in a default argument.
+    "B008",
+    # Long literal strings (prompts, URLs) are clearer unwrapped.
+    "E501",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Scripts are run top-to-bottom, not imported; module-level code after imports
+# is the point. These entrypoints must also load dotenv before importing modules
+# that read config at import time, so imports can't all sit at the top.
+"scripts/*" = ["E402"]
+"eval/*" = ["E402"]
+"app/db/seed_data.py" = ["E402"]

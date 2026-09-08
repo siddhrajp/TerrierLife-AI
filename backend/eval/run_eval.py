@@ -13,23 +13,23 @@ Usage:
 """
 import asyncio
 import json
+import math
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from datasets import Dataset
 from ragas import evaluate
-from ragas.metrics._faithfulness import Faithfulness
+from ragas.llms import llm_factory
 from ragas.metrics._answer_relevance import ResponseRelevancy
 from ragas.metrics._context_precision import LLMContextPrecisionWithoutReference
 from ragas.metrics._context_recall import LLMContextRecall
-from ragas.llms import llm_factory
-from ragas.embeddings import OpenAIEmbeddings as RagasOpenAIEmbeddings
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from ragas.metrics._faithfulness import Faithfulness
 
 from app.db.connection import SessionLocal
 from app.services.rag_service import search_bu_resources
@@ -50,10 +50,11 @@ async def collect_rag_outputs() -> list[dict]:
         try:
             result = await search_bu_resources(db=db, query=question)
 
-            contexts = [
-                f"{s.get('title', '')}: {result['context'][:500]}"
-                for s in result.get("sources", [])
-            ] if result.get("sources") else ["No context retrieved"]
+            # Score the individual retrieved chunks. Previously this repeated the
+            # same truncated context blob once per source, which floored the
+            # context metrics and penalized faithfulness for anything the answer
+            # used past the truncation point.
+            contexts = result.get("chunks") or ["No context retrieved"]
 
             # Generate answer using GPT-4o grounded in retrieved context
             from langchain_openai import ChatOpenAI
@@ -94,9 +95,9 @@ def run_ragas(results: list[dict]):
     """Run RAGAS evaluation on collected results."""
     print("\nRunning RAGAS evaluation...")
 
+    from langchain_openai import OpenAIEmbeddings as LCOpenAIEmbeddings
     from openai import OpenAI as OpenAIClient
     from ragas.embeddings import LangchainEmbeddingsWrapper
-    from langchain_openai import OpenAIEmbeddings as LCOpenAIEmbeddings
 
     openai_client = OpenAIClient(api_key=os.getenv("OPENAI_API_KEY"))
     llm = llm_factory("gpt-4o", client=openai_client)
@@ -142,7 +143,7 @@ def print_report(scores, results: list[dict]):
     print(f"  Context Recall:     {cr_score:.2f}  (did we retrieve enough docs?)")
     print()
 
-    valid_scores = [s for s in [f_score, ar_score, cp_score, cr_score] if not (s != s)]  # filter nan
+    valid_scores = [s for s in [f_score, ar_score, cp_score, cr_score] if not math.isnan(s)]
     avg = sum(valid_scores) / len(valid_scores) if valid_scores else 0.0
 
     if avg >= 0.85:
@@ -172,7 +173,7 @@ def print_report(scores, results: list[dict]):
     with open(out_path, "w") as f:
         json.dump(report, f, indent=2)
 
-    print(f"\nResults saved to eval/eval_results.json")
+    print("\nResults saved to eval/eval_results.json")
     return report
 
 

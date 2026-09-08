@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query
-from app.services.events_service import search_events
+
 from app.db.connection import get_db
+from app.services.events_service import search_events
 
 router = APIRouter()
 

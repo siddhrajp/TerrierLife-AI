@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, ARRAY, DECIMAL, Date, Time, TIMESTAMP
-from sqlalchemy.orm import declarative_base
 from pgvector.sqlalchemy import Vector
+from sqlalchemy import ARRAY, DECIMAL, Column, Date, Integer, String, Text, Time
+from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 

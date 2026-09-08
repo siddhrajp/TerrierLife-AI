@@ -13,12 +13,16 @@ Usage:
 import asyncio
 import json
 import os
+import random
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from dotenv import load_dotenv
+
 load_dotenv()
+
+from openai import RateLimitError
 
 from app.db.connection import SessionLocal
 from app.services.openai_service import handle_query
@@ -34,14 +38,30 @@ def _param_matches(tool_name: str, key: str, actual, expected) -> bool:
     return str(actual).lower() == str(expected).lower()
 
 
+async def _handle_with_retry(db, case: dict, attempts: int = 4):
+    """Retry on transient API errors (notably 429 TPM limits — the agent pulls
+    a lot of context per call, so a full run can outpace the token/min quota).
+    Without this, a rate-limited call is indistinguishable from the agent
+    choosing no tool, which silently corrupts the accuracy numbers."""
+    for attempt in range(attempts):
+        try:
+            return await handle_query(
+                message=case["message"],
+                location=case.get("location"),
+                time_available=case.get("time_available"),
+                interests=case.get("interests"),
+                db=db,
+            )
+        except RateLimitError:
+            if attempt == attempts - 1:
+                raise
+            delay = 20 * (attempt + 1) + random.uniform(0, 3)
+            print(f"  rate limited, retrying in {delay:.0f}s...")
+            await asyncio.sleep(delay)
+
+
 async def run_case(db, case: dict) -> dict:
-    result = await handle_query(
-        message=case["message"],
-        location=case.get("location"),
-        time_available=case.get("time_available"),
-        interests=case.get("interests"),
-        db=db,
-    )
+    result = await _handle_with_retry(db, case)
 
     called_tools = {tc["tool"] for tc in result.get("tool_calls", [])}
     expected_tools = set(case["expected_tools"])
@@ -93,23 +113,35 @@ async def main():
 
     db.close()
 
-    total = len(results)
-    exact_matches = sum(1 for r in results if r["exact_match"])
-    overlaps = sum(1 for r in results if r["any_overlap"])
-    param_checked = [r for r in results if r["param_match"] is not None]
+    # Cases that errored out never exercised the agent's judgement, so scoring
+    # them as wrong tool choices would understate accuracy.
+    errored = [r for r in results if r.get("error")]
+    scored = [r for r in results if not r.get("error")]
+
+    total = len(scored)
+    exact_matches = sum(1 for r in scored if r["exact_match"])
+    overlaps = sum(1 for r in scored if r["any_overlap"])
+    param_checked = [r for r in scored if r["param_match"] is not None]
     param_correct = sum(1 for r in param_checked if r["param_match"])
 
     print("\n" + "=" * 50)
     print("TERRIERLIFE AI — TOOL SELECTION EVALUATION")
     print("=" * 50)
-    print(f"Test cases: {total}")
-    print(f"  Exact tool-set match:  {exact_matches}/{total}  ({exact_matches / total:.0%})")
-    print(f"  Any correct tool used: {overlaps}/{total}  ({overlaps / total:.0%})")
+    print(f"Test cases: {len(results)}  (scored: {total}, errored: {len(errored)})")
+    if total:
+        print(f"  Exact tool-set match:  {exact_matches}/{total}  ({exact_matches / total:.0%})")
+        print(f"  Any correct tool used: {overlaps}/{total}  ({overlaps / total:.0%})")
     if param_checked:
         print(f"  Parameter accuracy:    {param_correct}/{len(param_checked)}  ({param_correct / len(param_checked):.0%})")
     print("=" * 50)
 
-    misses = [r for r in results if not r["exact_match"]]
+    if errored:
+        print("\nErrored (excluded from scoring — API failures, not agent errors):")
+        for r in errored:
+            print(f"  - \"{r['message'][:60]}\"")
+            print(f"      {r['error'][:100]}")
+
+    misses = [r for r in scored if not r["exact_match"]]
     if misses:
         print("\nMisses:")
         for r in misses:
@@ -117,9 +149,11 @@ async def main():
             print(f"      expected: {r['expected_tools']}  got: {r['called_tools']}")
 
     report = {
-        "total": total,
-        "exact_match_rate": round(exact_matches / total, 2),
-        "any_overlap_rate": round(overlaps / total, 2),
+        "total_cases": len(results),
+        "scored": total,
+        "errored": len(errored),
+        "exact_match_rate": round(exact_matches / total, 2) if total else None,
+        "any_overlap_rate": round(overlaps / total, 2) if total else None,
         "param_accuracy": round(param_correct / len(param_checked), 2) if param_checked else None,
         "cases": results,
     }
@@ -128,7 +162,7 @@ async def main():
     with open(out_path, "w") as f:
         json.dump(report, f, indent=2)
 
-    print(f"\nResults saved to eval/tool_eval_results.json")
+    print("\nResults saved to eval/tool_eval_results.json")
 
 
 if __name__ == "__main__":

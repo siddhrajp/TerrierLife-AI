@@ -1,16 +1,42 @@
+import asyncio
 import json
+import logging
+import os
+import time
+
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain_core.tools import tool
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.tools import tool
+from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
+
+from app.services.events_service import search_events
 from app.services.places_service import search_places
 from app.services.rag_service import search_bu_resources
-from app.services.events_service import search_events
 
 load_dotenv()
 
-llm = ChatOpenAI(model="gpt-4o", temperature=0)
+logger = logging.getLogger(__name__)
+
+# Per-call ceiling on the OpenAI request, and how many times the SDK retries
+# transient failures (429s, timeouts) before giving up.
+LLM_TIMEOUT_SECONDS = float(os.getenv("LLM_TIMEOUT_SECONDS", "45"))
+LLM_MAX_RETRIES = int(os.getenv("LLM_MAX_RETRIES", "3"))
+
+# Ceiling on the whole ReAct loop. LangGraph defaults to 25 steps; each step is
+# a billable call, so an agent that loops burns money until it hits the cap.
+AGENT_RECURSION_LIMIT = int(os.getenv("AGENT_RECURSION_LIMIT", "8"))
+
+# Wall-clock ceiling for the entire agent run (multiple LLM calls + tool calls),
+# so a slow chain can't pin a worker indefinitely.
+AGENT_TIMEOUT_SECONDS = float(os.getenv("AGENT_TIMEOUT_SECONDS", "90"))
+
+llm = ChatOpenAI(
+    model="gpt-4o",
+    temperature=0,
+    timeout=LLM_TIMEOUT_SECONDS,
+    max_retries=LLM_MAX_RETRIES,
+)
 
 SYSTEM_PROMPT = """You are TerrierLife AI, a smart campus assistant for Boston University students.
 
@@ -84,7 +110,15 @@ async def handle_query(
         HumanMessage(content="\n".join(context_parts)),
     ]
 
-    result = await agent.ainvoke({"messages": messages})
+    started = time.monotonic()
+    result = await asyncio.wait_for(
+        agent.ainvoke(
+            {"messages": messages},
+            config={"recursion_limit": AGENT_RECURSION_LIMIT},
+        ),
+        timeout=AGENT_TIMEOUT_SECONDS,
+    )
+    elapsed = time.monotonic() - started
 
     # Last message in the result is the final AI response
     final_message = result["messages"][-1]
@@ -96,11 +130,35 @@ async def handle_query(
         for tc in msg.tool_calls
     ]
 
+    usage = _sum_token_usage(result["messages"])
+    logger.info(
+        "agent_query_complete",
+        extra={
+            "elapsed_ms": round(elapsed * 1000),
+            "tools_called": [tc["tool"] for tc in tool_calls],
+            "steps": len(result["messages"]),
+            "input_tokens": usage["input_tokens"],
+            "output_tokens": usage["output_tokens"],
+        },
+    )
+
     return {
         "response": final_message.content,
         "type": detect_response_type(message),
         "tool_calls": tool_calls,
+        "usage": {**usage, "elapsed_ms": round(elapsed * 1000)},
     }
+
+
+def _sum_token_usage(messages) -> dict:
+    """Total token usage across every LLM call in the ReAct loop, so cost is
+    attributable per request rather than only visible on the OpenAI bill."""
+    input_tokens = output_tokens = 0
+    for msg in messages:
+        meta = getattr(msg, "usage_metadata", None) or {}
+        input_tokens += meta.get("input_tokens", 0)
+        output_tokens += meta.get("output_tokens", 0)
+    return {"input_tokens": input_tokens, "output_tokens": output_tokens}
 
 
 def detect_response_type(message: str) -> str:

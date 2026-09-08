@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, Query
-from app.services.rag_service import search_bu_resources
+
 from app.db.connection import get_db
+from app.services.rag_service import search_bu_resources
 
 router = APIRouter()
 
