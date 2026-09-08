@@ -1,5 +1,16 @@
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import ARRAY, DECIMAL, Column, Date, Integer, String, Text, Time
+from sqlalchemy import (
+    ARRAY,
+    DECIMAL,
+    TIMESTAMP,
+    Column,
+    Date,
+    Integer,
+    String,
+    Text,
+    Time,
+    func,
+)
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -57,3 +68,13 @@ class UserSession(Base):
     session_id = Column(String(100), unique=True)
     interests = Column(ARRAY(String))
     role = Column(String(50))
+
+
+class ConversationMessage(Base):
+    __tablename__ = "conversation_messages"
+
+    id = Column(Integer, primary_key=True)
+    session_id = Column(String(100), index=True)
+    role = Column(String(20))       # 'user' | 'assistant'
+    content = Column(Text)
+    created_at = Column(TIMESTAMP, server_default=func.now())

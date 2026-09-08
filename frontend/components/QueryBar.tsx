@@ -13,7 +13,7 @@ const EXAMPLE_PROMPTS = [
 ];
 
 interface QueryBarProps {
-  onResult: (response: QueryResponse) => void;
+  onResult: (question: string, response: QueryResponse) => void;
 }
 
 export default function QueryBar({ onResult }: QueryBarProps) {
@@ -33,7 +33,10 @@ export default function QueryBar({ onResult }: QueryBarProps) {
         location: location || undefined,
         time_available: timeAvailable ? parseInt(timeAvailable) : undefined,
       });
-      onResult(result);
+      onResult(query, result);
+      // Clear on success so follow-ups are quick to type — the thread above
+      // keeps the question visible.
+      setQuery('');
     } catch {
       setError('Something went wrong. Is the backend running?');
     }

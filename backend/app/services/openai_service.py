@@ -5,12 +5,13 @@ import os
 import time
 
 from dotenv import load_dotenv
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 
 from app.services.events_service import search_events
+from app.services.memory_service import load_history, save_turn
 from app.services.places_service import search_places
 from app.services.rag_service import search_bu_resources
 
@@ -62,7 +63,11 @@ async def handle_query(
     time_available: int | None,
     interests: list | None,
     db,
+    session_id: str | None = None,
 ) -> dict:
+    """Answer one query. When session_id is supplied, prior turns for that
+    session are replayed to the agent so follow-ups resolve against them;
+    without it the call is stateless, as before."""
 
     @tool
     async def get_nearby_places(location: str, place_type: str, features: list[str] = None, max_walk_minutes: int = 10) -> str:
@@ -105,10 +110,17 @@ async def handle_query(
     if interests:
         context_parts.append(f"Interests: {', '.join(interests)}")
 
-    messages = [
-        SystemMessage(content=SYSTEM_PROMPT),
-        HumanMessage(content="\n".join(context_parts)),
-    ]
+    # Prior turns sit between the system prompt and the current query, so the
+    # agent can resolve references like "somewhere closer" against them.
+    history = load_history(db, session_id)
+    messages = [SystemMessage(content=SYSTEM_PROMPT)]
+    for past in history:
+        messages.append(
+            AIMessage(content=past["content"])
+            if past["role"] == "assistant"
+            else HumanMessage(content=past["content"])
+        )
+    messages.append(HumanMessage(content="\n".join(context_parts)))
 
     started = time.monotonic()
     result = await asyncio.wait_for(
@@ -139,8 +151,13 @@ async def handle_query(
             "steps": len(result["messages"]),
             "input_tokens": usage["input_tokens"],
             "output_tokens": usage["output_tokens"],
+            "history_messages": len(history),
         },
     )
+
+    # Store the raw query, not the assembled context block — replaying the
+    # location/time scaffolding on later turns would confuse the model.
+    save_turn(db, session_id, message, final_message.content)
 
     return {
         "response": final_message.content,

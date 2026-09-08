@@ -54,3 +54,18 @@ CREATE TABLE IF NOT EXISTS user_sessions (
     role VARCHAR(50),             -- 'undergrad', 'grad', 'international'
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Conversation history, so follow-ups like "actually, closer to Questrom"
+-- resolve against the previous turn.
+CREATE TABLE IF NOT EXISTS conversation_messages (
+    id SERIAL PRIMARY KEY,
+    session_id VARCHAR(100) NOT NULL,
+    role VARCHAR(20) NOT NULL,    -- 'user' | 'assistant'
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- History is always read as "latest N for this session"; without this index
+-- that read degrades as the table grows.
+CREATE INDEX IF NOT EXISTS idx_conversation_session_time
+    ON conversation_messages (session_id, created_at DESC);
