@@ -2,6 +2,7 @@
 Scrape BU public resource pages and save to data/bu_resources.json.
 Run from the backend/ directory: python scripts/scrape_bu_resources.py
 """
+import hashlib
 import json
 import os
 
@@ -121,12 +122,25 @@ def scrape_page(url: str) -> str:
 
 
 results = []
+# Several listed URLs redirect to a common landing page (all five /careers/*
+# paths resolve to careers.bu.edu). Indexing each copy wastes retrieval slots:
+# one query can fill k with duplicates of a single page and crowd out other
+# sources. Deduplicate on content so only the first occurrence is kept.
+seen_content: dict[str, str] = {}
 for page in BU_PAGES:
     print(f"Scraping: {page['url']}")
     content = scrape_page(page["url"])
-    if content:
-        results.append({**page, "content": content})
-        print(f"  OK ({len(content)} chars)")
+    if not content:
+        continue
+
+    fingerprint = hashlib.md5(content.encode()).hexdigest()
+    if fingerprint in seen_content:
+        print(f"  Skipped (duplicate of {seen_content[fingerprint]})")
+        continue
+
+    seen_content[fingerprint] = page["url"]
+    results.append({**page, "content": content})
+    print(f"  OK ({len(content)} chars)")
 
 out_path = os.path.join(os.path.dirname(__file__), "../../data/bu_resources.json")
 with open(out_path, "w") as f:
