@@ -59,24 +59,48 @@ def load_resource_chunks() -> list[Document]:
     return splitter.split_documents(docs)
 
 
-async def search_bu_resources(db: Session, query: str) -> dict:
-    # Vector retriever — semantic similarity
+# Retrieval defaults. These were reasoned about, not swept — eval/run_retrieval_eval.py
+# exists so they can be tuned against a deterministic metric rather than intuition.
+RETRIEVAL_K = int(os.getenv("RAG_RETRIEVAL_K", "5"))
+BM25_WEIGHT = float(os.getenv("RAG_BM25_WEIGHT", "0.4"))
+VECTOR_WEIGHT = float(os.getenv("RAG_VECTOR_WEIGHT", "0.6"))
+
+
+def build_retriever(
+    k: int = RETRIEVAL_K,
+    bm25_weight: float = BM25_WEIGHT,
+    vector_weight: float = VECTOR_WEIGHT,
+    mode: str = "hybrid",
+):
+    """Construct the retrieval stack.
+
+    Exposed as a function so the offline eval exercises the *same* retriever
+    production does. A harness that rebuilds its own copy silently drifts from
+    the system it claims to measure.
+
+    mode: "hybrid" (BM25 + vector), "vector", or "bm25" — for ablations.
+    """
     vectorstore = _get_vectorstore()
-    vector_retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+    vector_retriever = vectorstore.as_retriever(search_kwargs={"k": k})
+    if mode == "vector":
+        return vector_retriever
 
-    # BM25 retriever — keyword matching
     all_docs = load_resource_chunks()
-    if all_docs:
-        bm25_retriever = BM25Retriever.from_documents(all_docs, k=5)
+    if not all_docs:
+        return vector_retriever
 
-        # Ensemble: 40% BM25 keyword + 60% vector semantic
-        retriever = EnsembleRetriever(
-            retrievers=[bm25_retriever, vector_retriever],
-            weights=[0.4, 0.6],
-        )
-    else:
-        retriever = vector_retriever
+    bm25_retriever = BM25Retriever.from_documents(all_docs, k=k)
+    if mode == "bm25":
+        return bm25_retriever
 
+    return EnsembleRetriever(
+        retrievers=[bm25_retriever, vector_retriever],
+        weights=[bm25_weight, vector_weight],
+    )
+
+
+async def search_bu_resources(db: Session, query: str) -> dict:
+    retriever = build_retriever()
     docs = retriever.invoke(query)
 
     if not docs:

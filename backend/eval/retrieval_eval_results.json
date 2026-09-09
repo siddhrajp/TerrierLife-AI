@@ -1,0 +1,332 @@
+{
+  "config": {
+    "mode": "hybrid",
+    "k": 5,
+    "bm25_weight": 0.4,
+    "vector_weight": 0.6
+  },
+  "summary": {
+    "hit@1": 0.875,
+    "hit@3": 0.9375,
+    "hit@5": 1.0,
+    "mrr": 0.921875,
+    "questions_scored": 16,
+    "questions_excluded_no_coverage": 4
+  },
+  "per_question": [
+    {
+      "question": "How do I apply for OPT as an F-1 student?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/isso/employment/opt/",
+        "https://www.bu.edu/isso/international-students/off-campus-student-employment-training/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/isso/employment/opt/",
+        "https://www.bu.edu/isso/international-students/off-campus-student-employment-training/curricular-practical-training-cpt/",
+        "https://www.bu.edu/isso/international-students/off-campus-student-employment-training/",
+        "https://www.bu.edu/isso/international-students/",
+        "https://www.bu.edu/isso/travel/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "What is CPT and how is it different from OPT?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/isso/international-students/off-campus-student-employment-training/curricular-practical-training-cpt/",
+        "https://www.bu.edu/isso/employment/opt/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/isso/international-students/off-campus-student-employment-training/curricular-practical-training-cpt/",
+        "https://www.bu.edu/isso/international-students/",
+        "https://www.bu.edu/isso/employment/opt/",
+        "https://www.bu.edu/isso/international-students/off-campus-student-employment-training/",
+        "https://www.bu.edu/isso/travel/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "Where is the ISSO office at BU?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/isso/",
+        "https://www.bu.edu/isso/international-students/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/isso/international-students/",
+        "https://www.bu.edu/studentactivities/",
+        "https://www.bu.edu/tech/",
+        "https://www.bu.edu/isso/international-students/off-campus-student-employment-training/",
+        "https://www.bu.edu/safety/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "What documents do I need for my F-1 visa travel signature?",
+      "coverage": "partial",
+      "expected": [
+        "https://www.bu.edu/isso/travel/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/isso/international-students/",
+        "https://www.bu.edu/isso/employment/opt/",
+        "https://www.bu.edu/isso/international-students/off-campus-student-employment-training/curricular-practical-training-cpt/",
+        "https://www.bu.edu/isso/travel/",
+        "https://www.bu.edu/isso/international-students/off-campus-student-employment-training/"
+      ],
+      "hit@1": false,
+      "hit@3": false,
+      "hit@5": true,
+      "rr": 0.25,
+      "rank": 4
+    },
+    {
+      "question": "How do I get resume help at BU?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/careers/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/tech/support/",
+        "https://www.bu.edu/careers/",
+        "https://www.bu.edu/advising/",
+        "https://www.bu.edu/finaid/undergraduate-students/",
+        "https://www.bu.edu/reg/"
+      ],
+      "hit@1": false,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 0.5,
+      "rank": 2
+    },
+    {
+      "question": "Does BU have a career fair?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/careers/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/careers/",
+        "https://www.bu.edu/advising/",
+        "https://www.bu.edu/studentactivities/",
+        "https://www.bu.edu/bufellow/",
+        "https://www.bu.edu/housing/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "Where is the BU Career Development office?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/careers/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/careers/",
+        "https://www.bu.edu/advising/",
+        "https://www.bu.edu/disability/",
+        "https://www.bu.edu/studentactivities/",
+        "https://www.bu.edu/wellness/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "Where can I get academic advising in CAS?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/cas/academics/advising/",
+        "https://www.bu.edu/advising/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/cas/academics/advising/",
+        "https://www.bu.edu/advising/",
+        "https://www.bu.edu/advising/educational-resource-center/",
+        "https://www.bu.edu/disability/",
+        "https://www.bu.edu/careers/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "Where can I get free tutoring at BU?",
+      "coverage": "partial",
+      "expected": [
+        "https://www.bu.edu/advising/educational-resource-center/",
+        "https://www.bu.edu/advising/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/advising/",
+        "https://www.bu.edu/tech/support/",
+        "https://www.bu.edu/finaid/undergraduate-students/",
+        "https://www.bu.edu/tech/",
+        "https://www.bu.edu/library/services/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "What subjects does the Educational Resource Center cover?",
+      "coverage": "partial",
+      "expected": [
+        "https://www.bu.edu/advising/educational-resource-center/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/advising/educational-resource-center/",
+        "https://www.bu.edu/advising/",
+        "https://www.bu.edu/library/",
+        "https://www.bu.edu/tech/",
+        "https://www.bu.edu/library/research/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "How do I make an appointment at Student Health Services?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/shs/",
+        "https://www.bu.edu/shs/medical/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/shs/medical/",
+        "https://www.bu.edu/shs/behavioral-medicine/",
+        "https://www.bu.edu/shs/",
+        "https://www.bu.edu/shs/immunizations/",
+        "https://www.bu.edu/disability/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "Does BU offer mental health counseling?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/shs/behavioral-medicine/",
+        "https://www.bu.edu/wellness/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/shs/behavioral-medicine/",
+        "https://www.bu.edu/shs/",
+        "https://www.bu.edu/wellness/",
+        "https://www.bu.edu/advising/",
+        "https://www.bu.edu/disability/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "Can I book a study room at the BU library?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/library/mugar-memorial/",
+        "https://www.bu.edu/library/services/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/library/mugar-memorial/",
+        "https://www.bu.edu/disability/",
+        "https://www.bu.edu/library/",
+        "https://www.bu.edu/library/research/",
+        "https://www.bu.edu/library/services/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "How do I apply for financial aid at BU?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/finaid/",
+        "https://www.bu.edu/finaid/how-aid-works/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/finaid/",
+        "https://www.bu.edu/finaid/undergraduate-students/",
+        "https://www.bu.edu/finaid/how-aid-works/",
+        "https://www.bu.edu/finaid/how-aid-works/types-of-aid/",
+        "https://www.bu.edu/reg/registration/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "How do I register for disability accommodations at BU?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/disability/accommodations/",
+        "https://www.bu.edu/disability/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/disability/accommodations/",
+        "https://www.bu.edu/reg/registration/",
+        "https://www.bu.edu/disability/",
+        "https://www.bu.edu/tech/support/",
+        "https://www.bu.edu/finaid/undergraduate-students/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    },
+    {
+      "question": "How do I apply for study abroad at BU?",
+      "coverage": "full",
+      "expected": [
+        "https://www.bu.edu/abroad/"
+      ],
+      "top_retrieved": [
+        "https://www.bu.edu/abroad/",
+        "https://www.bu.edu/finaid/",
+        "https://www.bu.edu/finaid/undergraduate-students/",
+        "https://www.bu.edu/finaid/how-aid-works/",
+        "https://www.bu.edu/reg/registration/"
+      ],
+      "hit@1": true,
+      "hit@3": true,
+      "hit@5": true,
+      "rr": 1.0,
+      "rank": 1
+    }
+  ]
+}

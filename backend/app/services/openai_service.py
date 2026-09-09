@@ -83,11 +83,17 @@ async def handle_query(
         )
         return json.dumps(result)
 
+    # The retriever's citations are collected here as the agent runs. They are
+    # what retrieval *surfaced*, not proof the answer used them — but they are
+    # verifiable, unlike URLs the model writes into prose on its own.
+    retrieved_sources: list[dict] = []
+
     @tool
     async def search_bu_resource(query: str) -> str:
         """Answer questions about BU services, policies, advising, career center,
         international students (OPT/CPT), health services, financial aid, housing, etc."""
         result = await search_bu_resources(db=db, query=query)
+        retrieved_sources.extend(result.get("sources", []))
         return json.dumps(result)
 
     @tool
@@ -143,6 +149,7 @@ async def handle_query(
     ]
 
     usage = _sum_token_usage(result["messages"])
+    sources = _dedupe_sources(retrieved_sources)
     logger.info(
         "agent_query_complete",
         extra={
@@ -152,6 +159,7 @@ async def handle_query(
             "input_tokens": usage["input_tokens"],
             "output_tokens": usage["output_tokens"],
             "history_messages": len(history),
+            "sources_returned": len(sources),
         },
     )
 
@@ -163,8 +171,23 @@ async def handle_query(
         "response": final_message.content,
         "type": detect_response_type(message),
         "tool_calls": tool_calls,
+        "sources": sources,
         "usage": {**usage, "elapsed_ms": round(elapsed * 1000)},
     }
+
+
+def _dedupe_sources(sources: list[dict]) -> list[dict]:
+    """The agent may search more than once per query, so the same page can be
+    retrieved by several calls. Keep first occurrence, preserving order."""
+    seen: set[str] = set()
+    unique = []
+    for s in sources:
+        url = s.get("url", "")
+        if url in seen:
+            continue
+        seen.add(url)
+        unique.append(s)
+    return unique
 
 
 def _sum_token_usage(messages) -> dict:
